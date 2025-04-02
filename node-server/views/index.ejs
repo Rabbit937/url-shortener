@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>URL Shortener</title>
+</head>
+
+<body>
+    <h1>URL Shortener</h1>
+    <form id="shortenForm">
+        <input type="url" name="long_url" placeholder="Enter long URL" required>
+        <button type="submit">Shorten</button>
+    </form>
+    <div id="result"></div>
+    <div id="stats"></div>
+
+    <script>
+        document.getElementById('shortenForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // const formData = new FormData(e.target);
+            const response = await fetch('http://localhost:8080/api/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ long_url:e.target.long_url.value })
+            });
+            const data = await response.json();
+            document.getElementById('result').innerHTML = `
+                Short URL: <a href="http://localhost:8080/${data.short_code}" target="_blank">
+                    http://localhost:8080/${data.short_code}
+                </a>
+            `;
+        });
+
+        // 加载统计
+        async function loadStats() {
+            const res = await fetch('http://localhost:8080/api/stats');
+            const stats = await res.json();
+            document.getElementById('stats').innerHTML = `
+                <h3>Statistics</h3>
+                <ul>
+                    ${stats.map(url => `
+                        <li>
+                            ${url.short_code}: ${url.visit_count} visits
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+        }
+        loadStats();
+    </script>
+</body>
+
+</html>
